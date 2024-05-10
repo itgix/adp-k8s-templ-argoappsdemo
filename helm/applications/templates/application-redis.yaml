@@ -1,0 +1,29 @@
+{{- if index .Values "applications" "demo_app_enabled" }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: x-k8s-redis-pop
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  destination:
+    namespace: pop-dev
+    server: https://kubernetes.default.svc
+  project: applications
+  source:
+    helm:
+      releaseName: x-k8s-redis
+      valueFiles:
+      - values.yaml
+      - ../applications/values/{{ index .Values "applications" "environment" }}/{{ index .Values "applications" "region" }}/applications-facts.yaml
+    path: helm/redis
+    repoURL:  {{ index .Values "applications" "applications_destination_repo" }}
+    targetRevision: HEAD
+  syncPolicy:
+    automated: # automated sync by default retries failed attempts 5 times with following delays between attempts ( 5s, 10s, 20s, 40s, 80s ); retry controlled using `retry` field.
+      prune: true # Specifies if resources should be pruned during auto-syncing ( false by default ).
+      selfHeal: true # Specifies if partial app sync should be executed when resources are changed only in target Kubernetes cluster and no git change detected ( false by default ).
+    syncOptions:     # Sync options which modifies sync behavior
+    - CreateNamespace=true
+{{- end }}

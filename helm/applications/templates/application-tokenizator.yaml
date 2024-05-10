@@ -1,0 +1,51 @@
+{{- if index .Values "applications" "demo_app_enabled" }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: pop-dev-tc
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+spec:
+  destination:
+    namespace: pop-dev
+    server: https://kubernetes.default.svc
+  project: 'applications'
+  source:
+    helm:
+      releaseName: pop-dev-tc
+      valueFiles:
+      - ../applications/values/{{ index .Values "applications" "environment" }}/{{ index .Values "applications" "region" }}/applications-facts.yaml
+      - ../pop-tokenization-component/values.yaml
+      values: |
+        global:
+          vars:
+            BASE_DB_URL: {{ index .Values "applications" "rds_cluster_endpoint" }}
+        tokenization-component:
+          externalsecretEnv:
+            env:
+            - name: DATASOURCE_USERNAME
+              key: {{ index .Values "applications" "rds_master_credentials_secret_name" }}
+              property: username
+            - name: DATASOURCE_PASSWORD
+              key: {{ index .Values "applications" "rds_master_credentials_secret_name" }}
+              property: password
+          ingress:
+            annotations:
+              external-dns.alpha.kubernetes.io/hostname: tokenization-component.{{ index .Values "applications" "environment" }}.{{ index .Values "applications" "dns_main_domain" }}.
+            dynamic:
+              tls: false
+              baseDomain: {{ index .Values "applications" "dns_main_domain" }}
+          
+    path: helm/pop-tokenization-component
+    repoURL: {{ index .Values "applications" "applications_destination_repo" }}
+    targetRevision: HEAD
+  syncPolicy:
+    automated: # automated sync by default retries failed attempts 5 times with following delays between attempts ( 5s, 10s, 20s, 40s, 80s ); retry controlled using `retry` field.
+      prune: true # Specifies if resources should be pruned during auto-syncing ( false by default ).
+      selfHeal: true # Specifies if partial app sync should be executed when resources are changed only in target Kubernetes cluster and no git change detected ( false by default ).
+      allowEmpty: false # Allows deleting all application resources during automatic syncing ( false by default ).
+    syncOptions:     # Sync options which modifies sync behavior
+    - CreateNamespace=true
+  revisionHistoryLimit: 3
+{{- end }}
