@@ -1,4 +1,4 @@
-{{- if index .Values "applications" "demo_app_enabled" }}
+{{- if index .Values "infra-services" "demo_app_enabled" }}
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -16,9 +16,9 @@ spec:
       releaseName: x-k8s-redis
       valueFiles:
       - values.yaml
-      - ../applications/values/{{ index .Values "applications" "environment" }}/{{ index .Values "applications" "region" }}/applications-facts.yaml
+      - ../applications/values/{{ index .Values "infra-services" "environment" }}/{{ index .Values "infra-services" "region" }}/applications-facts.yaml
     path: helm/redis
-    repoURL:  {{ index .Values "applications" "applications_destination_repo" }}
+    repoURL:  {{ index .Values "infra-services" "applications_destination_repo" }}
     targetRevision: HEAD
   syncPolicy:
     automated: # automated sync by default retries failed attempts 5 times with following delays between attempts ( 5s, 10s, 20s, 40s, 80s ); retry controlled using `retry` field.
