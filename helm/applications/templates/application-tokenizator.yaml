@@ -15,7 +15,7 @@ spec:
     helm:
       releaseName: pop-dev-tc
       valueFiles:
-      - ../applications/values/{{ index .Values "infra-services" "environment" }}/{{ index .Values "infra-services" "region" }}/applications-facts.yaml
+      - ../applications/values/{{ index .Values "infra-services" "environment" }}/{{ index .Values "infra-services" "region" }}/infra-facts.yaml
       - ../pop-tokenization-component/values.yaml
       values: |
         global:

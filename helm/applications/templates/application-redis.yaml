@@ -16,7 +16,7 @@ spec:
       releaseName: x-k8s-redis
       valueFiles:
       - values.yaml
-      - ../applications/values/{{ index .Values "infra-services" "environment" }}/{{ index .Values "infra-services" "region" }}/applications-facts.yaml
+      - ../applications/values/{{ index .Values "infra-services" "environment" }}/{{ index .Values "infra-services" "region" }}/infra-facts.yaml
     path: helm/redis
     repoURL:  {{ index .Values "infra-services" "applications_destination_repo" }}
     targetRevision: HEAD
