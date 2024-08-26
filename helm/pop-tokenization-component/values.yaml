@@ -5,11 +5,11 @@ global:
     BASE_DB_URL: "Dummy variable"
     BASE_DB_OPTS: "usessl=true&sslmode=require"
     BASE_DB_USER: "postgres"
-    BASE_DB_PASS: "H7^^#lgs0UM#XJYEgEinbETh1cvYf^p#rhoxvnJOg%nK78LDJ8B65Tr52EZUM60a"
+    BASE_DB_PASS: "nopass"
 
     BASE_REDIS_HOST: "x-k8s-redis-headless"
     BASE_REDIS_USER: "default"
-    BASE_REDIS_PASS: "pjLid42E8V41"
+    BASE_REDIS_PASS: "mypasshere"
   # Env variables that are applied to every service
   env:
     AWS_REGION: "eu-central-1"
@@ -152,32 +152,4 @@ tokenization-component:
           periodSeconds: 60
           failureThreshold: 2
 
-  jobs:
-    - name: "liquibase-migrate"
-      restartPolicy: Never
-      serviceAccount:
-        enabled: false
-        name: ""
-      annotations:
-        argocd.argoproj.io/sync-wave: "-1"
-      image:
-        ecr: "082127478945.dkr.ecr.eu-central-1.amazonaws.com"
-        repository: "tokenization-component-liquibase"
-        tag: "master-099912c5"
-      command:
-        override: false
-        args: []
-      env: {}
-      envFromCM: true
-      externalsecretEnv:
-        enabled: true
-        env:
-        - name: BASE_DB_USER
-          key: "Dummy variable"
-          property: username
-        - name: BASE_DB_PASS
-          key: "Dummy variable"
-          property: password
-
-      volumes:
-        cm: []
+  jobs: []
