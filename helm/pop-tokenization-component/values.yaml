@@ -98,15 +98,15 @@ tokenization-component:
       pullSecret:
         enabled: false
         secretName: "-"
-
-      repository: "tokenization-component"
-      tag: "master-consistent_tokens-kms-099912c5"
+      ecr: "docker.io"
+      repository: "nginx"
+      tag: "1.27-alpine3.20-slim"
       pullPolicy: "Always"
 
     securityContext:
       enabled: true
-      runAsUser: 1000
-      fsGroup: 999
+      runAsUser: 0
+      fsGroup: 101
 
     ports:
     - name: application

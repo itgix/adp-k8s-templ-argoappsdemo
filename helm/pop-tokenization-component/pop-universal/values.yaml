@@ -124,16 +124,16 @@ deployment:
 
   securityContext:
     enabled: false
-    runAsUser: 1000
-    fsGroup: 999
+    runAsUser: 0
+    fsGroup: 101
 
   image:
     pullSecret:
       enabled: false
-      secretName: ""
-    ecr: "082127478945.dkr.ecr.eu-central-1.amazonaws.com"
-    repository: "docker.io"
-    tag: latest
+      secretName: "-"
+    ecr: "docker.io"
+    repository: "nginx"
+    tag: "1.27-alpine3.20-slim"
     pullPolicy: "Always"
 
   command:
