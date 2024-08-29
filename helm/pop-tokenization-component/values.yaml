@@ -127,27 +127,27 @@ tokenization-component:
       content:
         startupProbe:
           httpGet:
-            path: /actuator/health
-            port: 8080
-          initialDelaySeconds: 20
+            path: /
+            port: 80
+          initialDelaySeconds: 10
           timeoutSeconds: 5
           periodSeconds: 10
           failureThreshold: 20
 
         livenessProbe:
           httpGet:
-            path: /actuator/health
-            port: 8080
-          initialDelaySeconds: 60
+            path: /
+            port: 80
+          initialDelaySeconds: 10
           timeoutSeconds: 5
           periodSeconds: 60
           failureThreshold: 2
 
         readinessProbe:
           httpGet:
-            path: /actuator/health
-            port: 8080
-          initialDelaySeconds: 60
+            path: /
+            port: 80
+          initialDelaySeconds: 10
           timeoutSeconds: 5
           periodSeconds: 60
           failureThreshold: 2
