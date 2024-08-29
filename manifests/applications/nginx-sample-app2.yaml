@@ -12,5 +12,5 @@ spec:
   project: applications
   source:
     path: manifests/deployments
-    repoURL: {{ gitops_destination_repo }}
+    repoURL: {{ applications_destination_repo }}
     targetRevision: HEAD
