@@ -7,6 +7,6 @@ version: 1.0.0
 dependencies:
 - name: universal
   version: ">=1.0.0"
-  repository: file://./pop-universal
-  condition: tokenization-component.enabled
-  alias: tokenization-component
+  repository: file://../universalchart
+  condition: sample-component.enabled
+  alias: sample-component

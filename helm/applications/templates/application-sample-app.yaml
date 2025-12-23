@@ -2,7 +2,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: pop-dev-tc
+  name: sample-app
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: "4"
@@ -13,16 +13,16 @@ spec:
   project: 'applications'
   source:
     helm:
-      releaseName: pop-dev-tc
+      releaseName: sample-app
       valueFiles:
       - ../applications/values/{{ index .Values "infra-services" "environment" }}/{{ index .Values "infra-services" "region" }}/infra-facts.yaml
-      - ../pop-tokenization-component/values.yaml
-      - ../pop-tokenization-component/values/{{ index .Values "infra-services" "environment" }}/{{ index .Values "infra-services" "region" }}/values.yaml
+      - ../sample-app/values.yaml
+      - ../sample-app/values/{{ index .Values "infra-services" "environment" }}/{{ index .Values "infra-services" "region" }}/values.yaml
       values: |
         global:
           vars:
             BASE_DB_URL: {{ index .Values "infra-services" "rds_cluster_endpoint" }}
-        tokenization-component:
+        sample-component:
           externalsecretEnv:
             env:
             - name: DATASOURCE_USERNAME
@@ -33,12 +33,12 @@ spec:
               property: password
           ingress:
             annotations:
-              external-dns.alpha.kubernetes.io/hostname: tokenization-component.{{ index .Values "infra-services" "environment" }}.{{ index .Values "infra-services" "dns_main_domain" }}.
+              external-dns.alpha.kubernetes.io/hostname: sample-app-{{ index .Values "infra-services" "region" }}-{{ index .Values "infra-services" "environment" }}.{{ index .Values "infra-services" "dns_main_domain" }}.
             dynamic:
               tls: false
               baseDomain: {{ index .Values "infra-services" "dns_main_domain" }}
           
-    path: helm/pop-tokenization-component
+    path: helm/sample-app
     repoURL: {{ index .Values "infra-services" "applications_destination_repo" }}
     targetRevision: HEAD
   syncPolicy:
