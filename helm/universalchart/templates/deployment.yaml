@@ -64,7 +64,7 @@ spec:
 {{- end }}
       containers:
       - name: {{ .Values.appId }}
-        image: "{{ .Values.deployment.image.ecr }}/{{ .Values.deployment.image.repository }}:{{ .Values.deployment.image.tag }}"
+        image: "{{ .Values.deployment.image.ecr }}{{ .Values.deployment.image.repository }}:{{ .Values.deployment.image.tag }}"
         imagePullPolicy: {{ .Values.deployment.image.pullPolicy }}
         {{- if .Values.deployment.command.enabled }}
         command:

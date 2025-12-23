@@ -16,7 +16,7 @@ spec:
 {{- if .Values.ingress.dynamic.enabled }}
 {{- range $cfg := .Values.ingress.dynamic.cfgs }}
   {{- if $.Values.ingress.dynamic.nsPrefix }}
-  - host: {{ printf "%s-%s.%s" .name $.Release.Namespace $.Values.ingress.dynamic.baseDomain | replace "pop-" "" }}
+  - host: {{ printf "%s-%s.%s" .name $.Release.Namespace $.Values.ingress.dynamic.baseDomain }}
   {{- else }}
   - host: {{ printf "%s.%s" .name $.Values.ingress.dynamic.baseDomain }}
   {{- end }}
@@ -37,8 +37,8 @@ spec:
     {{- range $cfg := .Values.ingress.dynamic.cfgs }}
     - hosts:
       {{- if $.Values.ingress.dynamic.nsPrefix }}
-        - {{ printf "%s-%s.%s" .name $.Release.Namespace $.Values.ingress.dynamic.baseDomain | replace "pop-" "" }}
-      secretName: {{ printf "%s-%s.%s-tls" .name $.Release.Namespace $.Values.ingress.dynamic.baseDomain | replace "pop-" "" }}
+        - {{ printf "%s-%s.%s" .name $.Release.Namespace $.Values.ingress.dynamic.baseDomain }}
+      secretName: {{ printf "%s-%s.%s-tls" .name $.Release.Namespace $.Values.ingress.dynamic.baseDomain }}
       {{- else }}
         - {{ printf "%s.%s" .name $.Values.ingress.dynamic.baseDomain }}
       secretName: {{ printf "%s.%s-tls" .name $.Values.ingress.dynamic.baseDomain }}
