@@ -18,7 +18,7 @@ sample-component:
   enabled: true
   appId: sample-component
   externalsecretEnv:
-    enabled: true
+    enabled: false
     env:
     - name: DATASOURCE_USERNAME
       key: "Dummy variable" 
