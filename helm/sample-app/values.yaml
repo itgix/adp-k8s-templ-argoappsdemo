@@ -92,7 +92,7 @@ sample-component:
       pullSecret:
         enabled: false
         secretName: "-"
-      ecr: "docker.io"
+      ecr: ""
       repository: "nginx"
       tag: "1.27-alpine3.20-slim"
       pullPolicy: "Always"
