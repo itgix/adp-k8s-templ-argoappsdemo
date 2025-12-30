@@ -222,8 +222,8 @@ jobs: []
 #      "helm.sh/hook-weight": "-5"
 #      "helm.sh/hook-delete-policy": before-hook-creation
 #    image:
-#      ecr: "082127478945.dkr.ecr.eu-central-1.amazonaws.com"
-#      repository: "pop-mgmt-image"
+#      ecr: "xxxxxx.dkr.ecr.eu-central-1.amazonaws.com"
+#      repository: "mgmt-image"
 #      tag: "jdk11-v1.0.2"
 #    command:
 #      override: true

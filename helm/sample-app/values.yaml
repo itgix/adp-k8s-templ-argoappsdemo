@@ -59,11 +59,11 @@ sample-component:
       nsPrefix: false
       tls: true
       baseDomain: itgix.eu
-      cfgs:
-      - name: sample-component
-        paths:
-          - /
-        port: 80
+#      cfgs:
+#      - name: sample-component
+#        paths:
+#          - /
+#        port: 80
 
   service:
     enabled: true

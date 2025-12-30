@@ -8,7 +8,7 @@ metadata:
     argocd.argoproj.io/sync-wave: "4"
 spec:
   destination:
-    namespace: pop-dev
+    namespace: sample-app
     server: https://kubernetes.default.svc
   project: 'applications'
   source:
@@ -37,6 +37,11 @@ spec:
             dynamic:
               tls: false
               baseDomain: {{ index .Values "infra-services" "dns_main_domain" }}
+              cfgs:
+              - name: sample-component-{{ index .Values "infra-services" "region" }}-{{ index .Values "infra-services" "environment" }}
+                paths:
+                  - /
+                port: 80
           
     path: helm/sample-app
     repoURL: {{ index .Values "infra-services" "applications_destination_repo" }}
