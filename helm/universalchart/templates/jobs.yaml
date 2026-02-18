@@ -24,9 +24,9 @@ spec:
       containers:
       - name: "{{ $.Values.appId }}-job-{{ .name }}"
         {{- if ne $.Values.jobsTagOverride "" }}
-        image: "{{ .image.ecr }}/{{ .image.repository }}:{{ $.Values.jobsTagOverride }}"
+        image: "{{ .image.ecr }}{{ .image.repository }}:{{ $.Values.jobsTagOverride }}"
         {{- else }}
-        image: "{{ .image.ecr }}/{{ .image.repository }}:{{ .image.tag }}"
+        image: "{{ .image.ecr }}{{ .image.repository }}:{{ .image.tag }}"
         {{- end }}
         {{- if .command.override }}
         command:
