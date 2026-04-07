@@ -106,6 +106,8 @@ deployment:
     enabled: false
     name: ""
 
+  terminationGracePeriodSeconds: 30
+
   replicaCount: !!integer 1
   revisionHistory: !!integer 0
   horizontalScaler:

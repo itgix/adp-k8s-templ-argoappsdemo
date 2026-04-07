@@ -62,6 +62,9 @@ spec:
       imagePullSecrets:
         - name: {{ .Values.deployment.image.pullSecret.secretName }}
 {{- end }}
+{{- if and (hasKey .Values.deployment "terminationGracePeriodSeconds") (ne .Values.deployment.terminationGracePeriodSeconds nil) }}
+      terminationGracePeriodSeconds: {{ .Values.deployment.terminationGracePeriodSeconds }}
+{{- end }}
       containers:
       - name: {{ .Values.appId }}
         image: "{{ .Values.deployment.image.ecr }}{{ .Values.deployment.image.repository }}:{{ .Values.deployment.image.tag }}"
