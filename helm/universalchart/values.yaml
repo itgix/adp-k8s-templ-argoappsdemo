@@ -124,9 +124,7 @@ deployment:
       maxSurge: !!integer 1
       maxUnavailable: 50%
 
-  securityContext:
-    runAsUser: 0
-    fsGroup: 101
+  securityContext: {}
 
   image:
     pullSecret:
