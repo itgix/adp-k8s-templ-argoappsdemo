@@ -92,33 +92,6 @@ serviceAccount:
 deployment:
   enabled: false
 
-  # Pod spec.securityContext (PodSecurityContext). Template uses omit+toYaml — only non-comment keys are used.
-  securityContext:
-    enabled: false
-    # runAsUser: 1000
-    # runAsGroup: 3000
-    # fsGroup: 2000
-    # fsGroupChangePolicy: OnRootMismatch
-    # runAsNonRoot: true
-    # supplementalGroups:
-    #   - 1000
-    # seLinuxOptions:
-    #   user: ""
-    #   role: ""
-    #   type: ""
-    #   level: ""
-    # seccompProfile:
-    #   type: RuntimeDefault
-    #   localhostProfile: ""
-    # sysctls:
-    #   - name: net.ipv4.ip_unprivileged_port_start
-    #     value: "0"
-    # windowsOptions:
-    #   gmsaCredentialSpec: ""
-    #   gmsaCredentialSpecName: ""
-    #   hostProcess: false
-    #   runAsUserName: ""
-
   nodeSelector: {}
 
   tolerations: []
@@ -150,6 +123,18 @@ deployment:
     RollingUpdate:
       maxSurge: !!integer 1
       maxUnavailable: 50%
+
+  # Pod: runAsUser, runAsGroup, runAsNonRoot, fsGroup, supplementalGroups, seccompProfile, …
+  # Container (same block; chart splits for the API): allowPrivilegeEscalation, readOnlyRootFilesystem, capabilities, privileged, procMount, appArmorProfile
+  securityContext:
+    enabled: false
+    # runAsUser: 1000
+    # fsGroup: 101
+    # allowPrivilegeEscalation: false
+    # readOnlyRootFilesystem: true
+    # capabilities:
+    #   drop:
+    #     - ALL
 
   image:
     pullSecret:

@@ -53,11 +53,10 @@ spec:
 {{- if .Values.deployment.serviceAccountName.enabled }}
       serviceAccountName: {{ .Values.deployment.serviceAccountName.name }}
 {{- end }}
-{{- if and .Values.deployment.securityContext .Values.deployment.securityContext.enabled }}
-{{- with (omit .Values.deployment.securityContext "enabled") }}
+{{- if .Values.deployment.securityContext.enabled }}
       securityContext:
-        {{- toYaml . | nindent 8 }}
-{{- end }}
+        runAsUser: {{ .Values.deployment.securityContext.runAsUser }}
+        fsGroup: {{ .Values.deployment.securityContext.fsGroup }}
 {{- end }}
 {{- if .Values.deployment.image.pullSecret.enabled }}
       imagePullSecrets:
@@ -70,6 +69,15 @@ spec:
       - name: {{ .Values.appId }}
         image: "{{ .Values.deployment.image.ecr }}{{ .Values.deployment.image.repository }}:{{ .Values.deployment.image.tag }}"
         imagePullPolicy: {{ .Values.deployment.image.pullPolicy }}
+        {{- if .Values.deployment.securityContext.enabled }}
+        {{- $sc := omit .Values.deployment.securityContext "enabled" }}
+        {{- $containerKeys := list "allowPrivilegeEscalation" "readOnlyRootFilesystem" "capabilities" "privileged" "procMount" "appArmorProfile" }}
+        {{- $ctrSc := pick $sc $containerKeys }}
+        {{- if $ctrSc }}
+        securityContext:
+          {{- toYaml $ctrSc | nindent 10 }}
+        {{- end }}
+        {{- end }}
         {{- if .Values.deployment.command.enabled }}
         command:
 {{ toYaml .Values.deployment.command.args | indent 10 }}
