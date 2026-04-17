@@ -53,10 +53,9 @@ spec:
 {{- if .Values.deployment.serviceAccountName.enabled }}
       serviceAccountName: {{ .Values.deployment.serviceAccountName.name }}
 {{- end }}
-{{- if .Values.deployment.securityContext.enabled }}
+{{- with .Values.deployment.securityContext }}
       securityContext:
-        runAsUser: {{ .Values.deployment.securityContext.runAsUser }}
-        fsGroup: {{ .Values.deployment.securityContext.fsGroup }}
+        {{- toYaml . | nindent 8 }}
 {{- end }}
 {{- if .Values.deployment.image.pullSecret.enabled }}
       imagePullSecrets:

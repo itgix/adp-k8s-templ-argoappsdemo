@@ -125,7 +125,6 @@ deployment:
       maxUnavailable: 50%
 
   securityContext:
-    enabled: false
     runAsUser: 0
     fsGroup: 101
 
