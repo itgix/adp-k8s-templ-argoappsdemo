@@ -47,7 +47,7 @@ spec:
             annotations:
               external-dns.alpha.kubernetes.io/hostname: itgix-portal.{{ index .Values "infra-services" "region" }}.{{ index .Values "infra-services" "dns_main_domain" }}
             hosts:
-              - host: itgix-portal.{{ index .Values "infra-services" "region" }}.{{ index .Values "infra-services" "dns_main_domain" }}
+              - host: itgix-portal-{{ index .Values "infra-services" "region" }}.{{ index .Values "infra-services" "dns_main_domain" }}
                 paths:
                   - /
                 port: 80
