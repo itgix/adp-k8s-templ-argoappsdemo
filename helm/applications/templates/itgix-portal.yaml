@@ -43,9 +43,11 @@ spec:
           cm:
             env:
               DB_URL: {{  index .Values "infra-services" "rds_cluster_endpoint" }}
+              OAUTH_REDIRECT_URI: "https://itgix-portal-{{ index .Values "infra-services" "region" }}.{{ index .Values "infra-services" "dns_main_domain" }}"
+              FRONTEND_URL: "https://itgix-portal-{{ index .Values "infra-services" "region" }}.{{ index .Values "infra-services" "dns_main_domain" }}"
           ingress:
             annotations:
-              external-dns.alpha.kubernetes.io/hostname: itgix-portal.{{ index .Values "infra-services" "region" }}.{{ index .Values "infra-services" "dns_main_domain" }}
+              external-dns.alpha.kubernetes.io/hostname: itgix-portal-{{ index .Values "infra-services" "region" }}.{{ index .Values "infra-services" "dns_main_domain" }}
             hosts:
               - host: itgix-portal-{{ index .Values "infra-services" "region" }}.{{ index .Values "infra-services" "dns_main_domain" }}
                 paths:
