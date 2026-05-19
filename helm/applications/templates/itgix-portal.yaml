@@ -43,16 +43,16 @@ spec:
           cm:
             env:
               DB_URL: {{  index .Values "infra-services" "rds_cluster_endpoint" }}
-              OAUTH_REDIRECT_URI: "https://itgix-portal-{{ index .Values "infra-services" "region" }}.{{ index .Values "infra-services" "dns_main_domain" }}/login/oauth2/code/google-employee"
-              FRONTEND_URL: "https://itgix-portal-{{ index .Values "infra-services" "region" }}.{{ index .Values "infra-services" "dns_main_domain" }}"
+              OAUTH_REDIRECT_URI: "https://itgix-portal-{{ index .Values "infra-services" "environment" }}-{{ index .Values "infra-services" "region" }}.{{ index .Values "infra-services" "dns_main_domain" }}/login/oauth2/code/google-employee"
+              FRONTEND_URL: "https://itgix-portal-{{ index .Values "infra-services" "environment" }}-{{ index .Values "infra-services" "region" }}.{{ index .Values "infra-services" "dns_main_domain" }}"
               {{- if (index .Values "infra-services" "itgix_portal_employee_login_enabled") }}
               EMPLOYEE_LOGIN_ENABLED: "true"
               {{- end }}
           ingress:
             annotations:
-              external-dns.alpha.kubernetes.io/hostname: itgix-portal-{{ index .Values "infra-services" "region" }}.{{ index .Values "infra-services" "dns_main_domain" }}
+              external-dns.alpha.kubernetes.io/hostname: itgix-portal-{{ index .Values "infra-services" "environment" }}-{{ index .Values "infra-services" "region" }}.{{ index .Values "infra-services" "dns_main_domain" }}
             hosts:
-              - host: itgix-portal-{{ index .Values "infra-services" "region" }}.{{ index .Values "infra-services" "dns_main_domain" }}
+              - host: itgix-portal-{{ index .Values "infra-services" "environment" }}-{{ index .Values "infra-services" "region" }}.{{ index .Values "infra-services" "dns_main_domain" }}
                 paths:
                   - /
                 port: 80
