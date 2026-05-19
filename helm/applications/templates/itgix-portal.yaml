@@ -43,7 +43,7 @@ spec:
           cm:
             env:
               DB_URL: {{  index .Values "infra-services" "rds_cluster_endpoint" }}
-              OAUTH_REDIRECT_URI: "https://itgix-portal-{{ index .Values "infra-services" "region" }}.{{ index .Values "infra-services" "dns_main_domain" }}"
+              OAUTH_REDIRECT_URI: "https://itgix-portal-{{ index .Values "infra-services" "region" }}.{{ index .Values "infra-services" "dns_main_domain" }}/login/oauth2/code/google-employee"
               FRONTEND_URL: "https://itgix-portal-{{ index .Values "infra-services" "region" }}.{{ index .Values "infra-services" "dns_main_domain" }}"
           ingress:
             annotations:
