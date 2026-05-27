@@ -25,13 +25,7 @@ externalsecretEnv:
     property: "nonexisting"
   # Mount selected keys from the same ExternalSecret as files (e.g. SSH/private keys).
   fileKeys: []
-#  - secretKey: SSH_PRIVATE_KEY
-#    key: dev-zeus-ssh-key-passphrase
-#    property: SSH_PRIVATE_KEY
-#    volName: zeus-ssh-key
-#    mountPath: /home/zeus/apps/conf  # directory; file mounts as mountPath/fileName via subPath (does not hide ZeusPs.conf)
-#    fileName: id_rsa
-#    defaultMode: 256  # 0400
+
 secretEnv:
   enabled: false
   env:
