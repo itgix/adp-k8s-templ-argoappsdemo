@@ -23,6 +23,9 @@ externalsecretEnv:
   - name: "test"
     key: "example"
     property: "nonexisting"
+  # Mount selected keys from the same ExternalSecret as files (e.g. SSH/private keys).
+  fileKeys: []
+
 secretEnv:
   enabled: false
   env:

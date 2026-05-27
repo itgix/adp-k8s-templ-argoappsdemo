@@ -70,9 +70,8 @@ spec:
         image: "{{ .Values.deployment.image.ecr }}{{ .Values.deployment.image.repository }}:{{ .Values.deployment.image.tag }}"
         imagePullPolicy: {{ .Values.deployment.image.pullPolicy }}
         {{- if .Values.deployment.securityContext.enabled }}
-        {{- $sc := omit .Values.deployment.securityContext "enabled" }}
-        {{- $containerKeys := list "allowPrivilegeEscalation" "readOnlyRootFilesystem" "capabilities" "privileged" "procMount" "appArmorProfile" }}
-        {{- $ctrSc := pick $sc $containerKeys }}
+        {{- $sc := omit .Values.deployment.securityContext "enabled" "runAsUser" "fsGroup" }}
+        {{- $ctrSc := pick $sc "allowPrivilegeEscalation" "readOnlyRootFilesystem" "capabilities" "privileged" "procMount" "appArmorProfile" }}
         {{- if $ctrSc }}
         securityContext:
           {{- toYaml $ctrSc | nindent 10 }}
@@ -99,11 +98,18 @@ spec:
         - secretRef:
             name: {{ .Values.appId }}-env
         {{- end }}
-        {{- if eq .Values.externalsecretEnv.enabled true }}
-        - secretRef:
-            name: {{ .Values.appId }}-external-secret
+        {{- if and .Values.externalsecretEnv.enabled (gt (len (.Values.externalsecretEnv.env | default list)) 0) }}
+        env:
+        {{- range .Values.externalsecretEnv.env }}
+        - name: {{ .name }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ $.Values.appId }}-external-secret
+              key: {{ .name }}
         {{- end }}
-        {{- if or (eq .Values.deployment.volumeMounts.enabled true) (eq .Values.secretFile.enabled true) (eq .Values.deployment.persistence.enabled true) }}
+        {{- end }}
+        {{- $fileKeys := .Values.externalsecretEnv.fileKeys | default list }}
+        {{- if or (eq .Values.deployment.volumeMounts.enabled true) (eq .Values.secretFile.enabled true) (eq .Values.deployment.persistence.enabled true) (and .Values.externalsecretEnv.enabled (gt (len $fileKeys) 0)) }}
         volumeMounts:
           {{- if .Values.deployment.persistence.enabled }}
           - mountPath: {{ .Values.deployment.persistence.mountPath }}
@@ -119,6 +125,15 @@ spec:
             {{- range $i, $file := .Values.secretFile.files }}
           - name: {{ $file.secretName }}-secretfile
             mountPath: {{ $file.mountPath }}
+            {{- end }}
+          {{- end }}
+          {{- if and .Values.externalsecretEnv.enabled (gt (len $fileKeys) 0) }}
+            {{- range $fileKeys }}
+          {{- $fileName := .fileName | default .secretKey }}
+          - name: {{ .volName }}
+            mountPath: {{ .mountPath }}/{{ $fileName }}
+            subPath: {{ $fileName }}
+            readOnly: true
             {{- end }}
           {{- end }}
         {{- end }}
@@ -173,7 +188,8 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- if or (eq .Values.deployment.volumes.enabled true) (eq .Values.secretFile.enabled true) (eq .Values.deployment.persistence.enabled true) }}
+      {{- $fileKeys := .Values.externalsecretEnv.fileKeys | default list }}
+      {{- if or (eq .Values.deployment.volumes.enabled true) (eq .Values.secretFile.enabled true) (eq .Values.deployment.persistence.enabled true) (and .Values.externalsecretEnv.enabled (gt (len $fileKeys) 0)) }}
       volumes:
       {{- if .Values.deployment.persistence.enabled }}
       - name: {{ .Values.appId }}-pvc
@@ -194,6 +210,17 @@ spec:
           secretName: {{ $chartname }}-file
           defaultMode: 420
       {{- end }}
+      {{- end }}
+      {{- if and .Values.externalsecretEnv.enabled (gt (len $fileKeys) 0) }}
+        {{- range $fileKeys }}
+      - name: {{ .volName }}
+        secret:
+          secretName: {{ $.Values.appId }}-external-secret
+          defaultMode: {{ .defaultMode | default 256 }}
+          items:
+            - key: {{ .secretKey }}
+              path: {{ .fileName | default .secretKey }}
+        {{- end }}
       {{- end }}
       {{- end }}
 {{- end -}}
