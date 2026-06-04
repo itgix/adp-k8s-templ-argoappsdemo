@@ -1,0 +1,197 @@
+global:
+  # Variables that are used to build env vars for the specific environment
+  vars:
+    ENV_NAME: "dev"
+    DB_HOST: "rds-ew1-dev-adpminidemo-1.c3koo0sq447y.eu-west-1.rds.amazonaws.com"
+    BASE_DB_OPTS: "usessl=true&sslmode=require"
+    # BASE_DB_USER: "postgres"
+    # BASE_DB_PASS: "nopass"
+
+    BASE_REDIS_HOST: "x-k8s-redis-headless"
+    BASE_REDIS_USER: "default"
+    BASE_REDIS_PASS: "mypasshere"
+  # Env variables that are applied to every service
+  env:
+    AWS_REGION: "eu-west-1"
+
+itgix-portal:
+  enabled: true
+  appId: itgix-portal
+  externalsecretEnv:
+    enabled: true
+    env:
+    # - name: "itgix-portal-secret-github-token"
+    #   key: "arn:aws:secretsmanager:eu-west-1:791296381042:secret:ew1-dev-adpminidemo-itgix-portal-secret-github-token-O88xh7"
+    - name: "DB_USERNAME"
+      key: "arn:aws:secretsmanager:eu-west-1:791296381042:secret:rds-ew1-dev-adpminidemo-tZKx43"
+      property: "username"
+    - name: "DB_PASSWORD"
+      key: "arn:aws:secretsmanager:eu-west-1:791296381042:secret:rds-ew1-dev-adpminidemo-tZKx43"
+      property: "password"
+    - name: "GOOGLE_CLIENT_ID"
+      key: "arn:aws:secretsmanager:eu-west-1:791296381042:secret:ew1-dev-adpminidemo-itgix-portal-google-OAuth-HQtdgq"
+      property: "GOOGLE_CLIENT_ID"
+    - name: "GOOGLE_CLIENT_SECRET"
+      key: "arn:aws:secretsmanager:eu-west-1:791296381042:secret:ew1-dev-adpminidemo-itgix-portal-google-OAuth-HQtdgq"
+      property: "GOOGLE_CLIENT_SECRET"
+  cm:
+    enabled: true
+    env:
+      APPLICATION_PORT: 8080
+      DB_NAME: itgix_portal
+      OAUTH_REDIRECT_URI: "https://itgix-portal.adplab.itgix.eu/login/oauth2/code/google-employee"
+      FRONTEND_URL: "https://itgix-portal.adplab.itgix.eu"
+    dynamic:
+      DATASOURCE_DB_URL: "jdbc:postgresql://{{ .Values.global.vars.BASE_DB_URL }}:5432/postgres?{{ .Values.global.vars.BASE_DB_OPTS }}"
+      DB_HOST: "{{ .Values.global.vars.DB_HOST }}"
+      REGION_NAME: "{{ .Values.global.env.AWS_REGION }}"
+      AWS_REGION: "{{ .Values.global.env.AWS_REGION }}"
+      AWS_DEFAULT_REGION: "{{ .Values.global.env.AWS_REGION }}"
+      REDIS_HOST: "{{ .Values.global.vars.BASE_REDIS_HOST }}"
+      REDIS_PORT: "6379"
+      REDIS_USE_SSL: "false"
+      REDIS_USERNAME: "{{ .Values.global.vars.BASE_REDIS_USER }}"
+
+  ingress:
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: alb
+      ingress.kubernetes.io/ssl-redirect: 'true'
+      external-dns.alpha.kubernetes.io/hostname: itgix-portal.adplab.itgix.eu
+      alb.ingress.kubernetes.io/actions.response-503: |
+        {"type":"fixed-response","fixedResponseConfig":{"contentType":"text/plain","statusCode":"503","messageBody":"503 Service Unavailable"}}
+      alb.ingress.kubernetes.io/ssl-redirect: "443"
+      alb.ingress.kubernetes.io/group.name: public-itgix-portal
+      alb.ingress.kubernetes.io/healthcheck-path: /health-check
+      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      alb.ingress.kubernetes.io/success-codes: 200-404
+      alb.ingress.kubernetes.io/target-type: ip
+      alb.ingress.kubernetes.io/target-group-attributes: deregistration_delay.timeout_seconds=10
+    hosts:
+    - host: itgix-portal.adplab.itgix.eu
+      paths:
+        - /
+      port: 80
+    tls: []
+    dynamic:
+      enabled: false
+
+  service:
+    enabled: true
+    external: false
+    type: LoadBalancer
+    ports:
+    - name: application
+      port: !!integer 80
+      protocol: TCP
+      targetPort: !!integer 80
+      nodePort: !!integer 30001
+
+  serviceAccount:
+    enabled: false
+    name: "aurora-tc-irsa"
+    annotations: {}
+
+  deployment:
+    enabled: true
+
+    serviceAccountName:
+      enabled: false
+      name: "aurora-tc-irsa"
+
+    replicaCount: 1
+
+    image:
+      pullSecret:
+        enabled: false
+        secretName: "ghcr-secret"
+      ecr: ""
+      repository: "ghcr.io/srachevaitgix/itgix-portal/itgix-portal"
+      tag: latest
+      pullPolicy: "Always"
+
+    securityContext:
+      enabled: false
+      runAsUser: 0
+      fsGroup: 101
+
+    ports:
+    - name: application
+      containerPort: 80
+      protocol: TCP
+
+    resources:
+      enabled: true
+      requests:
+        memory: 512Mi
+        cpu: 50m
+      limits:
+        memory: 1536Mi
+        cpu: 2
+
+    probes:
+      enabled: false
+      content:
+        startupProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 10
+          timeoutSeconds: 5
+          periodSeconds: 10
+          failureThreshold: 20
+
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 10
+          timeoutSeconds: 5
+          periodSeconds: 60
+          failureThreshold: 2
+
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 10
+          timeoutSeconds: 5
+          periodSeconds: 60
+          failureThreshold: 2
+
+  jobs:
+    - name: "liquibase-migrate"
+      restartPolicy: Never
+      serviceAccount:
+        enabled: false
+        name: ""
+      annotations:
+        # "helm.sh/hook": pre-upgrade
+        # "helm.sh/hook-weight": "-5"
+        # "helm.sh/hook-delete-policy": before-hook-creation
+        argocd.argoproj.io/sync-wave: "-1"
+        argocd.argoproj.io/hook: Sync
+        argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+        argocd.argoproj.io/sync-options: "Force=true,Replace=true"
+      # pullSecretName: "ghcr-secret"
+      image:
+        digest: true
+        repository: "ghcr.io/srachevaitgix/itgix-portal/itgix-portal-liquibase"
+        tag: latest
+        pullPolicy: "Always"
+      command:
+        enabled: false
+        override: false
+        args:
+          - "/bin/sh"
+#          - "-c"
+#          - "liquibase --defaultsFile=/liquibase/liquibase.properties update"
+      env: {}
+      envFromCM: true
+      volumes:
+        cm: [ ]
+        #  - cmName: some-custom-cm
+        #    volName: some-custom-cm-vol
+        #    mountPath: /tmp/cm
+###

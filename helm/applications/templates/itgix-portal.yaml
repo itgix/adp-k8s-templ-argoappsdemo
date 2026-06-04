@@ -1,0 +1,76 @@
+{{- if index .Values "infra-services" "itgix_portal_enabled" }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: itgix-portal
+  namespace: argocd
+  # annotations:
+  #   argocd.argoproj.io/sync-wave: "4"
+spec:
+  destination:
+    namespace: itgix-portal
+    server: https://kubernetes.default.svc
+  project: 'applications'
+  source:
+    helm:
+      releaseName: itgix-portal
+      valueFiles:
+      - ../applications/values/{{ index .Values "infra-services" "environment" }}/{{ index .Values "infra-services" "region" }}/infra-facts.yaml
+      - ../itgix-portal/values.yaml
+      - ../itgix-portal/values/{{ index .Values "infra-services" "environment" }}/{{ index .Values "infra-services" "region" }}/values.yaml
+      values: |
+        global:
+          vars:
+            DB_HOST: "{{  index .Values "infra-services" "rds_cluster_endpoint" }}"
+          env:
+            AWS_REGION: "{{  index .Values "infra-services" "region" }}"
+        itgix-portal:
+          externalsecretEnv:
+            enabled: true
+            env:
+            - name: "DB_USERNAME"
+              key: "{{  index .Values "infra-services" "rds_master_credentials_secret_arn" }}"
+              property: "username"
+            - name: "DB_PASSWORD"
+              key: "{{  index .Values "infra-services" "rds_master_credentials_secret_arn" }}"
+              property: "password"
+            - name: "GOOGLE_CLIENT_ID"
+              key: "{{  index .Values "infra-services" "custom_secret_arns" "itgix-portal-google-OAuth" }}"
+              property: "GOOGLE_CLIENT_ID"
+            - name: "GOOGLE_CLIENT_SECRET"
+              key: "{{  index .Values "infra-services" "custom_secret_arns" "itgix-portal-google-OAuth" }}"
+              property: "GOOGLE_CLIENT_SECRET"
+          cm:
+            env:
+              DB_URL: {{  index .Values "infra-services" "rds_cluster_endpoint" }}
+              OAUTH_REDIRECT_URI: "https://itgix-portal-{{ index .Values "infra-services" "environment" }}-{{ index .Values "infra-services" "region" }}.{{ index .Values "infra-services" "dns_main_domain" }}/login/oauth2/code/google-employee"
+              FRONTEND_URL: "https://itgix-portal-{{ index .Values "infra-services" "environment" }}-{{ index .Values "infra-services" "region" }}.{{ index .Values "infra-services" "dns_main_domain" }}"
+              {{- if (index .Values "infra-services" "itgix_portal_employee_login_enabled") }}
+              EMPLOYEE_LOGIN_ENABLED: "true"
+              {{- end }}
+          ingress:
+            annotations:
+              external-dns.alpha.kubernetes.io/hostname: itgix-portal-{{ index .Values "infra-services" "environment" }}-{{ index .Values "infra-services" "region" }}.{{ index .Values "infra-services" "dns_main_domain" }}
+            hosts:
+              - host: itgix-portal-{{ index .Values "infra-services" "environment" }}-{{ index .Values "infra-services" "region" }}.{{ index .Values "infra-services" "dns_main_domain" }}
+                paths:
+                  - /
+                port: 80
+    path: helm/itgix-portal
+    repoURL: {{ index .Values "infra-services" "applications_destination_repo" }}
+    targetRevision: HEAD
+  ignoreDifferences:
+    - group: external-secrets.io
+      kind: ExternalSecret
+      jqPathExpressions:
+        - '.status'
+        - '.spec.data[].remoteRef'
+  syncPolicy:
+    automated: # automated sync by default retries failed attempts 5 times with following delays between attempts ( 5s, 10s, 20s, 40s, 80s ); retry controlled using `retry` field.
+      prune: true # Specifies if resources should be pruned during auto-syncing ( false by default ).
+      selfHeal: true # Specifies if partial app sync should be executed when resources are changed only in target Kubernetes cluster and no git change detected ( false by default ).
+      allowEmpty: false # Allows deleting all application resources during automatic syncing ( false by default ).
+    syncOptions:     # Sync options which modifies sync behavior
+    - CreateNamespace=true
+  revisionHistoryLimit: 3
+{{- end }}
