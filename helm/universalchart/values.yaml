@@ -57,6 +57,7 @@ secretFile:
 ingress:
   enabled: false
   annotations: {}
+  ingressClassName: alb
   dynamic:
     enabled: false
     nsPrefix: true

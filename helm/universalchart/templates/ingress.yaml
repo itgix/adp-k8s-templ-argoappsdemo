@@ -12,6 +12,7 @@ metadata:
     release: "{{ .Release.Name }}"
     heritage: "{{ .Release.Service }}"
 spec:
+  ingressClassName: {{ .Values.ingress.ingressClassName }}
   rules:
 {{- if .Values.ingress.dynamic.enabled }}
 {{- range $cfg := .Values.ingress.dynamic.cfgs }}

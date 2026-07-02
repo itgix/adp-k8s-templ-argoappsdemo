@@ -185,8 +185,8 @@ itgix-portal:
         override: false
         args:
           - "/bin/sh"
-#          - "-c"
-#          - "liquibase --defaultsFile=/liquibase/liquibase.properties update"
+          - "-c"
+          - "liquibase --defaultsFile=/liquibase/liquibase.properties update"
       env: {}
       envFromCM: true
       volumes:
