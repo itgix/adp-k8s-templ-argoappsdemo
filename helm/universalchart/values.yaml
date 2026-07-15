@@ -121,6 +121,10 @@ deployment:
     maxReplicas: !!integer 4
     targetMemUtil: !!integer 80
     targetCpuUtil: !!integer 80
+  podDisruptionBudget:
+    enabled: false
+    minAvailable: 1
+    maxUnavailable: ""
   strategy:
     enabled: false
     type: RollingUpdate

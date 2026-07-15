@@ -1,0 +1,21 @@
+{{- if and .Values.deployment.enabled .Values.deployment.podDisruptionBudget.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Values.appId }}
+  labels:
+    app: {{ .Values.appId }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  {{- if .Values.deployment.podDisruptionBudget.minAvailable }}
+  minAvailable: {{ .Values.deployment.podDisruptionBudget.minAvailable }}
+  {{- end }}
+  {{- if .Values.deployment.podDisruptionBudget.maxUnavailable }}
+  maxUnavailable: {{ .Values.deployment.podDisruptionBudget.maxUnavailable }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: {{ .Values.appId }}
+{{- end }}
