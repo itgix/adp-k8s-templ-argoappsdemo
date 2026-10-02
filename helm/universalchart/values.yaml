@@ -189,7 +189,7 @@ deployment:
   resources:
     enabled: false
     requests:
-      memory: 256i
+      memory: 256Mi
       cpu: 50m
     limits:
       memory: 512Mi
