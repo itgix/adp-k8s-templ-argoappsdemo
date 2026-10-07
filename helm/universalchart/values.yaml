@@ -19,6 +19,7 @@ cm:
 
 externalsecretEnv:
   enabled: false
+  # `property` is optional: set it to read one JSON property of the secret, omit it for plain-string secrets.
   env:
   - name: "test"
     key: "example"
