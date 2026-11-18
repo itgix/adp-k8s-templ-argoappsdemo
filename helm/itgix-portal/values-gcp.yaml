@@ -1,0 +1,48 @@
+# Loaded only by the GCP Application. AWS values.yaml is unchanged.
+global:
+  vars:
+    DB_HOST: itgix-portal-postgresql
+
+itgix-portal:
+  externalsecretEnv:
+    secretStoreName: secretstore-gcp
+    annotations:
+      argocd.argoproj.io/sync-wave: "-3"
+  cm:
+    env:
+      DB_USERNAME: portal
+      SERVER_SERVLET_SESSION_COOKIE_SECURE: "true"
+    dynamic:
+      DATASOURCE_DB_URL: null
+      AWS_REGION: null
+      AWS_DEFAULT_REGION: null
+      REGION_NAME: null
+  ingress:
+    enabled: false
+  service:
+    type: ClusterIP
+  deployment:
+    probes:
+      enabled: true
+      content:
+        startupProbe:
+          httpGet:
+            path: /api/auth/config
+            port: 80
+          periodSeconds: 5
+          failureThreshold: 90
+        readinessProbe:
+          httpGet:
+            path: /api/auth/config
+            port: 80
+        livenessProbe:
+          httpGet:
+            path: /api/auth/config
+            port: 80
+          periodSeconds: 20
+
+postgresql:
+  enabled: true
+  image: postgres:16-alpine
+  storageSize: 10Gi
+  storageClassName: ""

@@ -1,0 +1,51 @@
+{{- $infra := default dict (index .Values "infra-services") -}}
+{{- if and (eq $infra.cloud "gcp") $infra.gcp_shared_gateway_enabled }}
+{{- $domain := trimSuffix "." (required "dns_main_domain is required" $infra.dns_main_domain) }}
+{{- $host := printf "itgix-portal-%s-%s.%s" $infra.environment $infra.region $domain }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Release.Namespace }}
+  labels:
+    adp.itgix.com/shared-gateway: "true"
+  annotations:
+    argocd.argoproj.io/sync-wave: "-4"
+    argocd.argoproj.io/sync-options: Prune=false
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ .Release.Name }}
+spec:
+  parentRefs:
+    - name: {{ default "adp-shared" $infra.gcp_gateway_name }}
+      namespace: {{ default "argocd" $infra.gcp_gateway_namespace }}
+      sectionName: https
+  hostnames:
+    - {{ $host | quote }}
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: {{ index .Values "itgix-portal" "appId" }}-svc
+          port: 80
+---
+apiVersion: networking.gke.io/v1
+kind: HealthCheckPolicy
+metadata:
+  name: {{ .Release.Name }}
+spec:
+  default:
+    config:
+      type: HTTP
+      httpHealthCheck:
+        portSpecification: USE_FIXED_PORT
+        port: 80
+        requestPath: /api/auth/config
+  targetRef:
+    group: ""
+    kind: Service
+    name: {{ index .Values "itgix-portal" "appId" }}-svc
+{{- end }}

@@ -1,4 +1,6 @@
 {{- if index .Values "infra-services" "itgix_portal_enabled" }}
+{{- $infra := index .Values "infra-services" -}}
+{{- $gcp := eq (default "aws" $infra.cloud) "gcp" -}}
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -11,6 +13,48 @@ spec:
     namespace: itgix-portal
     server: https://kubernetes.default.svc
   project: 'applications'
+{{- if $gcp }}
+{{- if not $infra.gcp_shared_gateway_enabled }}
+{{- fail "GCP portal requires gcp_shared_gateway_enabled" }}
+{{- end }}
+{{- $names := default dict $infra.custom_secret_names }}
+{{- $valuesRepo := default $infra.gitops_destination_repo $infra.applications_destination_repo }}
+{{- $factsChart := ternary "applications" "infra-services" (not (empty $infra.applications_destination_repo)) }}
+  sources:
+    - repoURL: https://github.com/itgix/adp-k8s-templ-argoappsdemo.git
+      targetRevision: {{ default "main" $infra.applications_template_repo_branch | quote }}
+      path: helm/itgix-portal
+      helm:
+        releaseName: itgix-portal
+        valueFiles:
+          - values-gcp.yaml
+          - $values/helm/{{ $factsChart }}/values/{{ $infra.environment }}/{{ $infra.region }}/infra-facts.yaml
+        values: |
+          global:
+            vars:
+              DB_HOST: itgix-portal-postgresql
+          itgix-portal:
+            externalsecretEnv:
+              env:
+                - name: DB_PASSWORD
+                  key: {{ required "Portal PostgreSQL secret name is required" (index $names "itgix-portal-postgres-password") | quote }}
+{{- if $infra.itgix_portal_employee_login_enabled }}
+                - name: GOOGLE_CLIENT_ID
+                  key: {{ required "Portal OAuth secret name is required" (index $names "itgix-portal-google-OAuth") | quote }}
+                  property: GOOGLE_CLIENT_ID
+                - name: GOOGLE_CLIENT_SECRET
+                  key: {{ index $names "itgix-portal-google-OAuth" | quote }}
+                  property: GOOGLE_CLIENT_SECRET
+{{- end }}
+            cm:
+              env:
+                FRONTEND_URL: "https://itgix-portal-{{ $infra.environment }}-{{ $infra.region }}.{{ $infra.dns_main_domain }}"
+                OAUTH_REDIRECT_URI: "https://itgix-portal-{{ $infra.environment }}-{{ $infra.region }}.{{ $infra.dns_main_domain }}/login/oauth2/code/google-employee"
+                EMPLOYEE_LOGIN_ENABLED: {{ default false $infra.itgix_portal_employee_login_enabled | toString | quote }}
+    - repoURL: {{ required "A GitOps repository is required for portal values" $valuesRepo | quote }}
+      targetRevision: HEAD
+      ref: values
+{{- else }}
   source:
     helm:
       releaseName: itgix-portal
@@ -59,6 +103,7 @@ spec:
     path: helm/itgix-portal
     repoURL: {{ index .Values "infra-services" "applications_destination_repo" }}
     targetRevision: HEAD
+{{- end }}
   ignoreDifferences:
     - group: external-secrets.io
       kind: ExternalSecret
