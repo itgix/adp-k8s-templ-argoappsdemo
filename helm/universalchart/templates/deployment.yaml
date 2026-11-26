@@ -5,6 +5,8 @@ metadata:
   name: {{ .Values.appId }}
   labels:
     app: {{ .Values.appId }}
+    app.kubernetes.io/name: {{ .Values.appId }}
+    app.kubernetes.io/version: {{ .Values.deployment.image.tag | quote }}
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     release: "{{ .Release.Name }}"
     heritage: "{{ .Release.Service }}"
@@ -39,6 +41,8 @@ spec:
     metadata:
       labels:
         app: {{ .Values.appId }}
+        app.kubernetes.io/name: {{ .Values.appId | quote }}
+        app.kubernetes.io/version: {{ .Values.deployment.image.tag | quote }}
         {{- range $key, $val := .Values.deployment.labels }}
         {{ $key }}: {{ $val | quote }}
         {{- end }}
